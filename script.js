@@ -100,6 +100,101 @@ document.addEventListener("DOMContentLoaded", () => {
   clearButton.textContent = "Clear History";
   sendButton.parentNode.insertBefore(clearButton, sendButton.nextSibling);
   
+  // Get model toggle elements
+  const modelToggle = document.getElementById("modelToggle");
+  const apiKeyInput = document.getElementById("apiKeyInput");
+  const saveApiKeyBtn = document.getElementById("saveApiKey");
+  
+  // Load current configuration
+  async function loadConfig() {
+    try {
+      const r = await fetch(BASE_URL + "/config");
+      if (r.ok) {
+        const config = await r.json();
+        modelToggle.checked = config.use_gemini;
+        toggleApiKeyInput(config.use_gemini);
+      }
+    } catch (err) {
+      console.error("loadConfig error:", err);
+    }
+  }
+  
+  // Show/hide API key input based on toggle
+  function toggleApiKeyInput(showApiKey) {
+    if (showApiKey) {
+      apiKeyInput.style.display = "block";
+      saveApiKeyBtn.style.display = "inline-block";
+    } else {
+      apiKeyInput.style.display = "none";
+      saveApiKeyBtn.style.display = "none";
+    }
+  }
+  
+  // Handle model toggle change
+  modelToggle.addEventListener("change", async () => {
+    const useGemini = modelToggle.checked;
+    toggleApiKeyInput(useGemini);
+    
+    try {
+      const r = await fetch(BASE_URL + "/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ use_gemini: useGemini })
+      });
+      
+      if (r.ok) {
+        const result = await r.json();
+        if (result.status === "success") {
+          append("info", `Switched to ${useGemini ? 'Gemini API' : 'Local Model'}`);
+        } else {
+          append("info", `Failed: ${result.message || 'Unknown error'}`);
+          modelToggle.checked = !useGemini; // Revert toggle
+        }
+      } else {
+        const error = await r.json().catch(() => ({ message: "Unknown error" }));
+        append("info", `Failed to switch: ${error.message}`);
+        modelToggle.checked = !useGemini; // Revert toggle
+      }
+    } catch (err) {
+      console.error("Model switch error:", err);
+      append("info", `Error switching model mode: ${err.message}`);
+      modelToggle.checked = !useGemini; // Revert toggle
+    }
+  });
+  
+  // Handle API key save
+  saveApiKeyBtn.addEventListener("click", async () => {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+      append("info", "Please enter an API key.");
+      return;
+    }
+    
+    try {
+      const r = await fetch(BASE_URL + "/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gemini_api_key: apiKey })
+      });
+      
+      if (r.ok) {
+        const result = await r.json();
+        if (result.status === "success") {
+          append("info", "API key saved successfully!");
+          apiKeyInput.value = ""; // Clear input for security
+        } else {
+          append("info", `Failed to save API key: ${result.message || 'Unknown error'}`);
+        }
+      } else {
+        const error = await r.json().catch(() => ({ message: "Unknown error" }));
+        append("info", `Failed to save API key: ${error.message}`);
+      }
+    } catch (err) {
+      console.error("API key save error:", err);
+      append("info", `Error saving API key: ${err.message}`);
+    }
+  });
+  
   // Clear History button click handler
   clearButton.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -219,8 +314,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize: check server and load chat history
+  // Initialize: check server, load config, and load chat history
   checkServer();
+  loadConfig();
   loadMemory();
   
   // Check server status every 5 seconds
