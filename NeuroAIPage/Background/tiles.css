@@ -1,0 +1,141 @@
+/* Tiles Background System - Separate from chat interface */
+
+/* Tiles root container - positioned behind everything */
+#tiles-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Background element for tiles */
+#background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: auto;
+}
+
+/* Grid container for 3D tiles effect */
+.grid-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    perspective: 1200px; /* Adjust perspective for 3D effect */
+    pointer-events: auto;
+}
+
+/* 3D transformed grid of tiles */
+#container {
+    opacity: 0.5;
+    width: 300vmax;
+    height: 300vmax;
+    display: grid;
+    grid-template-rows: repeat(40, 1fr);
+    grid-template-columns: repeat(40, 1fr);
+    position: absolute;
+    transform-style: preserve-3d;
+    transform: 
+        rotateX(30deg) 
+        rotateY(-5deg) 
+        rotateZ(20deg) 
+        translateX(10%) 
+        translateY(20%);
+    pointer-events: auto;
+}
+
+/* Individual tile styling */
+.tile {
+    border: 1px solid rgba(255, 77, 184, 0.2);
+    background-color: rgba(40, 20, 60, 0.3);
+    transition: all 1s cubic-bezier(0, 0, 0.2, 1);
+    will-change: transform, background-color;
+    pointer-events: auto;
+}
+
+/* Tile hover effects - mixed pink and blue theme */
+.tile.active-hover,
+.tile:hover {
+    transition-duration: 0s;
+    transform: translate(-7.5px, -7.5px);
+}
+
+.tile.active-hover:nth-child(2n),
+.tile:nth-child(2n):hover {
+    background-color: rgba(255, 77, 184, 0.6);
+    border-color: rgba(255, 77, 184, 0.7);
+}
+
+.tile.active-hover:nth-child(4n+1),
+.tile:nth-child(4n+1):hover {
+    background-color: rgba(77, 184, 255, 0.6);
+    border-color: rgba(77, 184, 255, 0.7);
+}
+
+.tile.active-hover:nth-child(4n+3),
+.tile:nth-child(4n+3):hover {
+    background-color: rgba(255, 119, 197, 0.5);
+    border-color: rgba(255, 119, 197, 0.7);
+}
+
+.tile.active-hover:nth-child(7n),
+.tile:nth-child(7n):hover {
+    background-color: rgba(77, 200, 255, 0.5);
+    border-color: rgba(77, 200, 255, 0.7);
+}
+
+.tile.active-hover:nth-child(7n+3),
+.tile:nth-child(7n+3):hover {
+    background-color: rgba(255, 77, 184, 0.65);
+    border-color: rgba(255, 77, 184, 0.8);
+}
+
+.tile.active-hover:nth-child(7n+5),
+.tile:nth-child(7n+5):hover {
+    background-color: rgba(150, 120, 255, 0.5);
+    border-color: rgba(150, 120, 255, 0.7);
+}
+
+.tile.active-hover:nth-child(7n+6),
+.tile:nth-child(7n+6):hover {
+    background-color: rgba(255, 102, 204, 0.6);
+    border-color: rgba(255, 102, 204, 0.7);
+}
+
+.tile.active-hover:nth-child(11n+1),
+.tile:nth-child(11n+1):hover {
+    background-color: rgba(119, 197, 255, 0.55);
+    border-color: rgba(119, 197, 255, 0.7);
+}
+
+.tile.active-hover:nth-child(11n+4),
+.tile:nth-child(11n+4):hover {
+    background-color: rgba(255, 77, 184, 0.7);
+    border-color: rgba(255, 77, 184, 0.8);
+}
+
+.tile.active-hover:nth-child(11n+7),
+.tile:nth-child(11n+7):hover {
+    background-color: rgba(255, 140, 200, 0.5);
+    border-color: rgba(255, 140, 200, 0.7);
+}
+
+.tile.active-hover:nth-child(11n+10),
+.tile:nth-child(11n+10):hover {
+    background-color: rgba(100, 180, 255, 0.6);
+    border-color: rgba(100, 180, 255, 0.7);
+}
