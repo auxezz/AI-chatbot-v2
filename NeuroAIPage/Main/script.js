@@ -1,225 +1,180 @@
-// script.js - Chat application with Neuro animation
+// script.js - Main logic for the Neuro AI Chatbot
 document.addEventListener("DOMContentLoaded", () => {
-  // retrieve HTML elements
+  // --- DOM Elements ---
   const chatBox = document.getElementById("chatBox");
   const userInput = document.getElementById("userInput");
   const sendButton = document.getElementById("sendButton");
   const serverStatus = document.getElementById("serverStatus");
   const neuroCorner = document.getElementById("neuro-corner");
-
-  const BASE_URL = "http://127.0.0.1:5000";
-
-  // --- Fallback Neuro animation/audio (used when NeuroSpin is not present) ---
-  let _fallbackAudioCtx = null;
-  function fallbackPlayBeep() {
-    try {
-      if (!_fallbackAudioCtx) _fallbackAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = _fallbackAudioCtx.createOscillator();
-      const gain = _fallbackAudioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.value = 800;
-      osc.connect(gain);
-      gain.connect(_fallbackAudioCtx.destination);
-      gain.gain.setValueAtTime(0.08, _fallbackAudioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, _fallbackAudioCtx.currentTime + 0.05);
-      osc.start(_fallbackAudioCtx.currentTime);
-      osc.stop(_fallbackAudioCtx.currentTime + 0.05);
-    } catch (e) {
-      // ignore audio errors
-    }
-  }
-
-  function fallbackAnimateText(element, prefix, text, charDelay = 50) {
-    return new Promise((resolve) => {
-      if (!element) return resolve();
-      let index = 0;
-      element.textContent = prefix;
-
-      if (neuroCorner) neuroCorner.classList.add('talking');
-
-      const interval = setInterval(() => {
-        if (index < text.length) {
-          element.textContent = prefix + text.substring(0, index + 1);
-          if (index % 2 === 0) fallbackPlayBeep();
-          index++;
-          chatBox.scrollTop = chatBox.scrollHeight;
-        } else {
-          clearInterval(interval);
-          if (neuroCorner) neuroCorner.classList.remove('talking');
-          resolve();
-        }
-      }, charDelay);
-    });
-  }
-
-  // Initialize NeuroSpin if available (safe)
-  if (window.NeuroSpin && typeof window.NeuroSpin.init === 'function') {
-    try {
-      window.NeuroSpin.init('neuro-corner');
-    } catch (e) {
-      console.warn('NeuroSpin.init failed', e);
-    }
-  }
-
-  // Create Clear History button (ensure sendButton exists)
-  if (sendButton && sendButton.parentNode) {
-    const clearButton = document.createElement("button");
-    clearButton.id = "clearButton";
-    clearButton.textContent = "Clear History";
-    sendButton.parentNode.insertBefore(clearButton, sendButton.nextSibling);
-
-    clearButton.addEventListener("click", async (e) => {
-      e.preventDefault();
-      try {
-        const r = await fetch(BASE_URL + "/clear_memory", { method: "POST" });
-        if (r.ok) {
-          chatBox.innerHTML = "";
-          loadMemory();
-        } else {
-          append("info", "Failed to clear history.");
-        }
-      } catch (err) {
-        console.error("clearMemory error:", err);
-        append("info", "Error clearing history.");
-      }
-    });
-  }
-
-  // Optional UI elements (model toggle / API key) - guard for absence
   const modelToggle = document.getElementById("modelToggle");
   const apiKeyInput = document.getElementById("apiKeyInput");
   const saveApiKeyBtn = document.getElementById("saveApiKey");
 
-  async function loadConfig() {
-    if (!modelToggle) return;
-    try {
-      const r = await fetch(BASE_URL + "/config");
-      if (r.ok) {
-        const config = await r.json();
-        modelToggle.checked = !!config.use_gemini;
-        toggleApiKeyInput(!!config.use_gemini);
-      }
-    } catch (err) {
-      console.error("loadConfig error:", err);
-    }
+  const BASE_URL = "http://127.0.0.1:5000";
+
+
+
+  // chat window for messages ts lowkey ugly ngl
+  function appendMessage(type, text) {
+    const div = document.createElement("div");
+    div.className = `msg ${type}`; 
+    div.textContent = (type === "user" ? "You: " : type === "ai" ? "Neuro: " : "") + text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll
+    return div;
   }
 
-  function toggleApiKeyInput(showApiKey) {
-    if (!apiKeyInput || !saveApiKeyBtn) return;
-    apiKeyInput.style.display = showApiKey ? "block" : "none";
-    saveApiKeyBtn.style.display = showApiKey ? "inline-block" : "none";
-  }
+  // Sends the users message
+  async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
 
-  if (modelToggle) {
-    modelToggle.addEventListener("change", async () => {
-      const useGemini = modelToggle.checked;
-      toggleApiKeyInput(useGemini);
-      try {
-        const r = await fetch(BASE_URL + "/config", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ use_gemini: useGemini })
-        });
-        if (r.ok) {
-          const result = await r.json();
-          append("info", `Switched to ${useGemini ? 'Gemini API' : 'Local Model'}`);
-        } else {
-          append("info", `Failed to switch model`);
-          modelToggle.checked = !useGemini;
-        }
-      } catch (err) {
-        console.error("Model switch error:", err);
-        append("info", `Error switching model mode`);
-        modelToggle.checked = !useGemini;
-      }
-    });
-  }
+    appendMessage("user", text);
+    userInput.value = "";
 
-  if (saveApiKeyBtn) {
-    saveApiKeyBtn.addEventListener("click", async () => {
-      const apiKey = apiKeyInput ? apiKeyInput.value.trim() : "";
-      if (!apiKey) { append("info", "Please enter an API key."); return; }
-      try {
-        const r = await fetch(BASE_URL + "/config", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gemini_api_key: apiKey })
-        });
-        if (r.ok) { append("info", "API key saved successfully!"); if (apiKeyInput) apiKeyInput.value = ""; }
-        else { append("info", "Failed to save API key."); }
-      } catch (err) { console.error("API key save error:", err); append("info", "Error saving API key."); }
-    });
-  }
-
-  // --- Utilities ---
-  function append(kind, text) {
-    const el = document.createElement("div");
-    el.className = "msg " + (kind === "user" ? "user" : kind === "ai" ? "ai" : "info");
-    el.textContent = (kind === "user" ? "You: " : kind === "ai" ? "Neuro: " : "") + text;
-    chatBox.appendChild(el);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    return el;
-  }
-
-  async function checkServer() {
-    try {
-      const r = await fetch(BASE_URL + "/ping", { method: "GET" });
-      if (r.ok) { serverStatus.textContent = "online"; serverStatus.style.color = "#8fffd4"; }
-      else { serverStatus.textContent = "offline"; serverStatus.style.color = "#ff99aa"; }
-    } catch (e) { serverStatus.textContent = "offline"; serverStatus.style.color = "#ff99aa"; }
-  }
-
-  async function loadMemory() {
-    try {
-      const r = await fetch(BASE_URL + "/memory");
-      if (!r.ok) return;
-      const mem = await r.json();
-      if (Array.isArray(mem)) {
-        chatBox.innerHTML = "";
-        mem.forEach(item => append(item.role === "user" ? "user" : "ai", item.content));
-      }
-    } catch (err) { console.error("loadMemory error:", err); }
-  }
-
-  // --- Main chat flow ---
-  async function sendMessage(text) {
-    if (!text || !text.trim()) return;
-    append("user", text);
-    if (userInput) userInput.value = "";
-
+    // placeholder 
     const aiMsg = document.createElement("div");
     aiMsg.className = "msg ai";
-    aiMsg.textContent = "Neuro: …thinking…";
+    aiMsg.textContent = "Neuro: thinking";
     chatBox.appendChild(aiMsg);
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-      const r = await fetch(BASE_URL + "/chat", {
+      const res = await fetch(`${BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text })
       });
-      if (!r.ok) { aiMsg.textContent = "Neuro: [server error " + r.status + "]"; return; }
-      const data = await r.json();
-      const reply = data.response ?? data.reply ?? "[no response]";
 
-      if (window.NeuroSpin && typeof window.NeuroSpin.animateText === 'function') {
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      
+      const data = await res.json();
+      const reply = data.response || data.reply || "[no response]";
+
+      // Use NeuroSpin animation 
+      if (window.NeuroSpin?.animateText) {
         await window.NeuroSpin.animateText(aiMsg, "Neuro: ", reply);
       } else {
-        await fallbackAnimateText(aiMsg, "Neuro: ", reply);
+        // If NeuroSpin is missing
+        aiMsg.textContent = "Neuro: " + reply;
       }
     } catch (err) {
-      console.error("sendMessage error:", err);
-      aiMsg.textContent = "Neuro: [connection error]";
-    } finally { chatBox.scrollTop = chatBox.scrollHeight; }
+      console.error(err);
+      aiMsg.textContent = "Neuro: [Connection Error]";
+    }
   }
 
-  if (sendButton) sendButton.addEventListener("click", (e) => { e.preventDefault(); sendMessage(userInput ? userInput.value : ""); });
-  if (userInput) userInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessage(userInput.value); } });
+  // Checks if the python server is running
+  async function checkServerStatus() {
+    try {
+      const res = await fetch(`${BASE_URL}/ping`);
+      serverStatus.textContent = res.ok ? "online" : "offline";
+      serverStatus.style.color = res.ok ? "#8fffd4" : "#ff99aa";
+    } catch {
+      serverStatus.textContent = "offline";
+      serverStatus.style.color = "#ff99aa";
+    }
+  }
 
-  // Init
-  checkServer();
+  // Loads chat history from memory file
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${BASE_URL}/memory`);
+      if (res.ok) {
+        const history = await res.json();
+        chatBox.innerHTML = ""; // Clear current view
+        history.forEach(msg => appendMessage(msg.role === "user" ? "user" : "ai", msg.content));
+      }
+    } catch (err) { console.error("Failed to load history", err); }
+  }
+
+  // Loads configuration from config 
+  async function loadConfig() {
+    if (!modelToggle) return;
+    try {
+      const res = await fetch(`${BASE_URL}/config`);
+      if (res.ok) {
+        const config = await res.json();
+        modelToggle.checked = config.use_gemini;
+        toggleApiKeyDisplay(config.use_gemini);
+      }
+    } catch (err) { console.error("Failed to load config", err); }
+  }
+
+  // Toggles visibility of API key 
+  function toggleApiKeyDisplay(show) {
+    if (apiKeyInput && saveApiKeyBtn) {
+      apiKeyInput.style.display = show ? "block" : "none";
+      saveApiKeyBtn.style.display = show ? "inline-block" : "none";
+    }
+  }
+
+  
+
+  // Send message on button click or Enter key
+  if (sendButton) sendButton.onclick = (e) => { e.preventDefault(); sendMessage(); };
+  if (userInput) userInput.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessage(); } };
+
+  // Model toggle switch
+  if (modelToggle) {
+    modelToggle.onchange = async () => {
+      const useGemini = modelToggle.checked;
+      toggleApiKeyDisplay(useGemini);
+      try {
+        await fetch(`${BASE_URL}/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ use_gemini: useGemini })
+        });
+        appendMessage("info", `Switched to ${useGemini ? 'Gemini API' : 'Local Model'}`);
+      } catch {
+        appendMessage("info", "Failed to switch model");
+        modelToggle.checked = !useGemini; // Revert on error
+      }
+    };
+  }
+
+  // Saves API Key button
+  if (saveApiKeyBtn) {
+    saveApiKeyBtn.onclick = async () => {
+      const key = apiKeyInput.value.trim();
+      if (!key) return appendMessage("info", "Enter an API key.");
+      
+      try {
+        await fetch(`${BASE_URL}/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gemini_api_key: key })
+        });
+        appendMessage("info", "API key saved!");
+        apiKeyInput.value = "";
+      } catch { appendMessage("info", "Error saving API key"); }
+    };
+  }
+
+  // Clear History shit button 
+  if (sendButton) {
+    const clearBtn = document.createElement("button");
+    clearBtn.textContent = "Clear History";
+    clearBtn.id = "clearButton";
+    sendButton.parentNode.insertBefore(clearBtn, sendButton.nextSibling);
+    
+    clearBtn.onclick = async (e) => {
+      e.preventDefault();
+      try {
+        await fetch(`${BASE_URL}/clear_memory`, { method: "POST" });
+        chatBox.innerHTML = "";
+        loadHistory();
+      } catch { appendMessage("info", "Failed to clear history."); }
+    };
+  }
+
+  // NeuroSpin 
+  if (window.NeuroSpin?.init) window.NeuroSpin.init('neuro-corner');
+
+  // Start up shit 
+  checkServerStatus();
   loadConfig();
-  loadMemory();
-  setInterval(checkServer, 5000);
+  loadHistory();
+  setInterval(checkServerStatus, 5000); // Check server status every 5 seconds
 });
