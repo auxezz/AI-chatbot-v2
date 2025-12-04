@@ -59,3 +59,38 @@ div{
     outline-color: #ffffff;
     color: #ffffff;
 }
+/* Navigation Bar */
+nav {
+    background-color: #0e101a;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #ff4db8;
+}
+
+nav a {
+    color: #ffffff;
+    text-decoration: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #ff4db8;
+}
+
+/* Footer */
+footer {
+    background-color: #0e101a;
+    padding: 1rem;
+    text-align: center;
+    margin-top: 2rem;
+    border-top: 1px solid #ff4db8;
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+}
+
