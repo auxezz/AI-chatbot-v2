@@ -10,6 +10,22 @@
 }
 
 
+nav {
+  background-color: var(--panel);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--pink);
+  width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: auto;
+}
+
+
 h1 {
     text-align: center;
     color: var(--pink);
@@ -44,7 +60,7 @@ p {
     background-color: var(--bg);
     padding: 10px;
     border-radius: 8px;
-    border: 3px solid var(--accent);
+    border: 2px solid var(--accent);
     color: var(--text);
     text-shadow : 0 0 5px rgba(255, 11, 157, 0.672); /* subtle glow effect */
 }
@@ -66,3 +82,20 @@ ul {
 li {
     margin-bottom: 8px;
 }
+
+/* footer styling */
+footer {
+  background-color: var(--panel);
+  text-align: center;
+  margin-top: 2rem;
+  border-top: 1px solid var(--pink);
+  color: var(--text);
+  width: 100vw;
+    padding: 1rem 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    pointer-events: auto;
+    
+}
+
