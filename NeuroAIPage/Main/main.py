@@ -106,7 +106,7 @@ else:
 @app.route("/")
 def index():
     # Neuro.html is inside the Main/ subfolder under the static root
-    return app.send_static_file('Main/Neuro.html')
+    return app.send_static_file('Knud/Infopage.html')
 
 @app.route("/ping", methods=["GET"])
 def ping():

@@ -18,7 +18,8 @@ body{
     outline-color: #ff4db8;
 }
 
-h1{
+h2{
+    margin-top: 10vh;
     font-family: 'Courier New', Courier, monospace;
     color: #ff4db8;
 }
@@ -61,7 +62,7 @@ div{
 }
 
 
-/* All bellow is added by Kristian, nav and footer styling */
+/* All bellow is added by Kristian and Magne, nav and footer styling */
 
 /* Navigation Bar */
 nav {
@@ -70,6 +71,12 @@ nav {
     justify-content: center;
     gap: 2rem;
     margin-bottom: 2rem;
+    background: radial-gradient(circle, #1a1a2e,#0b0f1b );
+    border-bottom: #ff4db8 1px solid;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
 nav a {
@@ -91,7 +98,12 @@ footer {
     text-align: center;
     margin-top: 2rem;
     color: #ffffff;
+    border-top:#ff4db8 1px solid;
     font-family: 'Courier New', Courier, monospace;
     opacity: 0.8;
+    width: 100vw;
+    position: fixed;
+    bottom: 0;
+    left: 0;
 }
 
