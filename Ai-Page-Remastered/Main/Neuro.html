@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neuro AI Chat</title>
+  <link rel="stylesheet" href="../Main/styles.css">
+  <link rel="stylesheet" href="../Background/tiles.css">
+</head>
+<body>
+  <div class="chat-root"> <!-- test -->  
+    <header class="chat-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1>Neuro</h1>
+          <p class="subtitle">AI Assistant</p>
+        </div>
+        <a href="index.html" style="color: #9fb7d6; text-decoration: none; font-size: 0.9rem;">Home</a>
+      </div>
+    </header>
+
+    <main id="chatBox" class="chat-box" aria-live="polite"></main>
+
+    <form id="inputForm" class="input-area" autocomplete="off">
+      <input id="userInput" type="text" placeholder="Type your message..." />
+      <button id="sendButton" type="submit">Send</button>
+    </form>
+
+
+    <footer class="chat-footer">Local server: <span id="serverStatus">unknown</span></footer>
+  </div>
+
+  <div id="neuro-corner">
+    <img id="neuro-img" src="../NeuroSpin/Neuro.png" alt="Neuro-sama">
+  </div>
+
+  <!-- API Key Modal -->
+  <div id="apiKeyModal" class="modal">
+    <div class="modal-content">
+      <h2>Enter Gemini API Key</h2>
+      <p>To chat with Neuro, you need to provide a valid Google Gemini API key.</p>
+      <input type="password" id="modalApiKeyInput" placeholder="Paste your API key here" />
+      <button id="modalSaveBtn">Save & Start</button>
+      <p id="modalError" style="color: #ff99aa; display: none; margin-top: 10px;"></p>
+    </div>
+  </div>
+
+  <div id="tiles-root">
+    <div id="background"></div>
+  </div>
+
+  <script src="../Background/tiles.js"></script>
+  <script src="../NeuroSpin/Neurospin.js"></script>
+  <script src="../Main/script.js"></script>
+  
+</body>
+</html>

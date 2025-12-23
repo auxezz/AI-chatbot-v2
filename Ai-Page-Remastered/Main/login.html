@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neuro AI - Login</title>
+  <link rel="stylesheet" href="/Main/styles.css">
+  <link rel="stylesheet" href="/Background/tiles.css">
+</head>
+<body>
+  
+  <div class="page-container" style="max-width: 500px;">
+    <h1 class="page-title">Welcome</h1>
+    <p class="page-subtitle">Please enter your name to continue</p>
+
+    <div class="input-group">
+      <input type="text" id="usernameInput" class="input-field" placeholder="Your Name" autocomplete="off">
+    </div>
+
+    <button id="enterBtn" class="btn-primary">Start Chat</button>
+  </div>
+
+  <div id="tiles-root">
+    <div id="background"></div>
+  </div>
+
+  <script src="/Background/tiles.js"></script>
+  <script>
+    const input = document.getElementById('usernameInput');
+    const btn = document.getElementById('enterBtn');
+
+    function login() {
+      const name = input.value.trim();
+      if (name) {
+        localStorage.setItem('neuro_username', name);
+        window.location.href = '/Main/Neuro.html';
+      } else {
+        input.style.borderColor = '#ff4444';
+        setTimeout(() => input.style.borderColor = 'rgba(255, 77, 184, 0.3)', 1000);
+      }
+    }
+
+    btn.addEventListener('click', login);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
+    });
+
+    // Focus input on load
+    window.onload = () => input.focus();
+  </script>
+</body>
+</html>
