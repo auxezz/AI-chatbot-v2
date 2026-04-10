@@ -10,7 +10,7 @@ google-genai>=0.3.0
 #Visual studio desktop development with C++ 
 
 
-For Remastered 
+For Remastered (better performance and stability)
 
 google-genai>=0.3.0
 flask==3.0.3
